@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<!-- namespace命名空间，作用就是对sql进行分类管理，理解sql隔离 注意：使用mapper代理方法开发，namespace有特殊重要的作用 -->
+<mapper namespace="cn.chx.mybatis.mapper.UserMapper">
+
+	<!-- 在映射文件中配置很多sql语句 -->
+	<!-- 通过select执行数据库查询 id：标识映射文件的sql，称为statement的id，将语句 封装到mappedStatement对象中，所以将id称为statement的id 
+		parameterType：指定參數的類型，这里指定int类型 #{}表示一个占位符号 #{id}：其中的id表示接收输入的参数，参数名称就是id， 
+		如果参数是简单类型，#{}中的参数名可以任意，可以value或其它名称 resultType指定sql输出结果的所映射的java对象类型， select指定resultType表示将单条记录映射成的java对象. -->
+	<select id="findUserById" parameterType="int" resultType="User">
+		select * from user where id = #{value}
+	</select>
+
+	<select id="findUserByName" parameterType="java.lang.String"
+		resultType="cn.chx.mybatis.po.User">
+		<!-- select * from User where userName like #{value} -->
+		select * from User where userName like '%${value}%'
+	</select>
+
+	<!-- 
+		添加用户
+		parameterType:指定输入参数类型是pojo(包括用户信息)
+		#{}中指定pojo的属性名，接收到pojo对象的属性值，mybatis通过OGNL获取对象的属性值
+	 -->
+	<insert id="insertUser" parameterType="cn.chx.mybatis.po.User">
+	<!-- 
+		将插入数据的主键返回，返回到user对象中
+		select last_insert_id():得到刚insert进去记录的主键值，只适用与自增主键
+		keyProperty:将查询到主键设置到parameType指定的对象的哪个属性
+		order:select last_insert_id()语句的执行顺序
+	 -->
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+			select last_insert_id()
+		</selectKey>
+		insert into User(username, birthday, sex, address) values(#{username},
+		#{birthday}, #{sex}, #{address})
+		
+		<!-- 
+			使用mysql的uuid()生成主键
+			执行过程：
+			首先通过uuid()得到主键，将主键设置到User对象的id属性中
+			其次在insert执行时，从user对象中取出id属性值
+		 -->
+		 <!-- <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+			select uuid()
+		</selectKey>
+		insert into User(id, username, birthday, sex, address) values(#{id}, #{username},
+		#{birthday}, #{sex}, #{address}) -->
+	</insert>
+	
+
+</mapper>
